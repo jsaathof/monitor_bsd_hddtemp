@@ -1,0 +1,48 @@
+=head1 NAME
+
+monitor_bsd_hddtemp.pl - Monitor HDD temperatures on FreeBSD systems
+
+=head1 VERSION
+
+Version 1.0 (September 2016)
+
+=head1 SYNOPSYS
+
+	monitor_bsd_hddtemp.pl
+
+=head1 DESCRIPTION
+
+This script gathers HDD temperature information and sends it via UDP to an
+Influx time-series database. The data in the InfluxDB can be visualized in
+different ways like Grafana and Influx' own Chronograf.
+
+The data is formatted specifically for the IndluxDB in the line protocol format.
+The line protocol supports tags to add information to the values. The hostname,
+the model, the serial number, the firmware version and the S.M.A.R.T. status
+are added as tags
+
+The address and port of the InfluxDB server is configured in the hash for the
+settings at the top of the script. The influxDB database should be configured to
+accept data over UDP. See the InfluxDB documentation on how to do this.
+
+=head1 NOTES
+
+This software has been tested on FreeNAS 9.10. It should work with other FreeBSD
+versions and maybe even on other BSD versions supporting smartctl and temperature
+monitoring.
+
+=head1 AUTHOR
+
+Jurriaan Saathof <jurriaan@xenophobia.nl>
+
+=head1 COPYRIGHT
+
+Copyright 2016 Jurriaan Saathof
+
+=head1 SEE ALSO
+
+IO::Socket::INET(3pm), Sys::Hostname{3pm}
+https://www.influxdata.com/time-series-platform/
+http://grafana.org
+http://www.freenas.org
+
