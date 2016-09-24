@@ -80,8 +80,9 @@ sub get_smartinfo {
 
 	my $info_regexref = {
 		'firmware'	=> 'Firmware Version',
-		'model'		=> 'Device Model',
+		'type'		=> 'Device Model',
 		'serial'	=> 'Serial Number',
+		'guid'		=> 'LU WWN Device Id',
 	};
 
 	foreach my $line ( @output ) {
@@ -90,7 +91,10 @@ sub get_smartinfo {
 
 			if( $line =~ /$info_regexref->{$object}/ ) {
 
-				my @info = split(/: +/, $line);
+				my @info = split(/: +/, $line, 2);
+				if( $object eq 'guid' ) {
+					$info[1] =~ s/ //g;
+				}
 				$smartinfo_ref->{$object} = $info[1];
 				last;
 			}
@@ -138,7 +142,7 @@ sub get_smartinfo {
 		if( $line =~ /Temperature_Celsius/ ) {
 
 			my @info = split(/ +/, $line);
-			$smartinfo_ref->{'temperature'} = $info[9]
+			$smartinfo_ref->{'value'} = $info[9]
 		}
 	}
 
@@ -177,19 +181,20 @@ sub create_lineprotocol {
 
 	foreach my $disk ( sort keys %{$data_ref} ) {
 
-		my @data;
-		my @tags = (
-			"hdd_temp",
-			"disk=$disk",
-			"host_name=$hostname",
-			"firmware=$data_ref->{$disk}->{'firmware'}",
-			"model=$data_ref->{$disk}->{'model'}",
-			"serial=$data_ref->{$disk}->{'serial'}",
-			"smart_status=$data_ref->{$disk}->{'smart_status'}",
-		);
+		my @tags;
+		push(@tags, "hdd_temp");
+		push(@tags, "disk=$disk");
+		push(@tags, "host_name=$hostname");
 
+		foreach my $tag ( sort keys %{$data_ref->{$disk}} ) {
+
+			next if( $tag eq "value" );
+			push(@tags, "$tag=$data_ref->{$disk}->{$tag}");
+		}
+
+		my @data;
 		push(@data, join(',', @tags));
-		push(@data, "value=$data_ref->{$disk}->{'temperature'}");
+		push(@data, "value=$data_ref->{$disk}->{'value'}");
 		push(@data, $timestamp);
 
 		$line_protocol .= sprintf("%s %s %d\n", @data);
@@ -210,6 +215,8 @@ sub send_data {
 	) or return(1, [ "cannot create socket: $@" ]);
 
 	my $lineprotocol = create_lineprotocol($data_ref);
+
+	print "[d] $lineprotocol\n";
 
 	$socket->send($lineprotocol);
 	$socket->close;
@@ -239,8 +246,8 @@ different ways like Grafana and Influx' own Chronograf.
 
 The data is formatted specifically for the IndluxDB in the line protocol format.
 The line protocol supports tags to add information to the values. The hostname,
-the model, the serial number, the firmware version and the S.M.A.R.T. status
-are added as tags
+the model, the serial number, the firmware version, GUID (or WWN if available)
+and the S.M.A.R.T. status are added as tags
 
 The address and port of the InfluxDB server is configured in the hash for the
 settings at the top of the script. The influxDB database should be configured to

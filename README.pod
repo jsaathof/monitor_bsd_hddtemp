@@ -18,8 +18,8 @@ different ways like Grafana and Influx' own Chronograf.
 
 The data is formatted specifically for the IndluxDB in the line protocol format.
 The line protocol supports tags to add information to the values. The hostname,
-the model, the serial number, the firmware version and the S.M.A.R.T. status
-are added as tags
+the model, the serial number, the firmware version, GUID (or WWN if available)
+and the S.M.A.R.T. status are added as tags
 
 The address and port of the InfluxDB server is configured in the hash for the
 settings at the top of the script. The influxDB database should be configured to
