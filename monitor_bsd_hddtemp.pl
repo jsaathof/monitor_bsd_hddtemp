@@ -2,18 +2,20 @@
 
 use strict;
 use warnings;
-use feature 'switch';
 
 use IO::Socket::INET;
 use Sys::Hostname;
 
 my $settings_ref = {
-	'smartctl' => {
-		'path'	=> '/usr/local/sbin/smartctl',
-	},
 	'influxdb' => {
 		'address'	=> '192.168.20.4',
 		'port'		=> 8089,
+	},
+	'smartctl' => {
+		'path'	=> '/usr/local/sbin/smartctl',
+	},
+	'sysctl' => {
+		'path'	=> '/sbin/sysctl',
 	},
 };
 
@@ -35,7 +37,7 @@ sub get_hddinfo {
 
 	my %hdd_info;
 
-	my $output = `/sbin/sysctl -n kern.disks`;
+	my $output = `$settings_ref->{'sysctl'}->{'path'} -n kern.disks`;
 	chomp($output);
 
 	foreach my $disk ( sort split(/ /, $output) ) {
@@ -215,8 +217,6 @@ sub send_data {
 	) or return(1, [ "cannot create socket: $@" ]);
 
 	my $lineprotocol = create_lineprotocol($data_ref);
-
-	print "[d] $lineprotocol\n";
 
 	$socket->send($lineprotocol);
 	$socket->close;
