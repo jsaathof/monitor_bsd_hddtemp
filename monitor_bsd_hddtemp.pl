@@ -97,6 +97,9 @@ sub get_smartinfo {
 				if( $object eq 'guid' ) {
 					$info[1] =~ s/ //g;
 				}
+				if( $object eq 'type' && $info[1] =~ / / ) {
+					$info[1] =~ s/.+ //;
+				}
 				$smartinfo_ref->{$object} = $info[1];
 				last;
 			}
