@@ -4,7 +4,7 @@ monitor_bsd_hddtemp.pl - Monitor HDD temperatures on FreeBSD systems
 
 =head1 VERSION
 
-Version 1.0 (September 2016)
+Version 1.2 (November 2016)
 
 =head1 SYNOPSYS
 
